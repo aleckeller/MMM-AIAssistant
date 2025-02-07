@@ -1,4 +1,4 @@
-Module.register("MMM-Template", {
+Module.register("MMM-AIAssistant", {
 
   defaults: {
     exampleContent: ""
@@ -16,9 +16,6 @@ Module.register("MMM-Template", {
    */
   start() {
     this.templateContent = this.config.exampleContent
-
-    // set timeout for next random text
-    setInterval(() => this.addRandomText(), 3000)
   },
 
   /**
@@ -29,8 +26,8 @@ Module.register("MMM-Template", {
    * @param {any} payload - The payload data`returned by the node helper.
    */
   socketNotificationReceived: function (notification, payload) {
-    if (notification === "EXAMPLE_NOTIFICATION") {
-      this.templateContent = `${this.config.exampleContent} ${payload.text}`
+    if (notification === "SPEECH_TO_TEXT_RESULT") {
+      this.templateContent = payload.text
       this.updateDom()
     }
   },
@@ -40,13 +37,9 @@ Module.register("MMM-Template", {
    */
   getDom() {
     const wrapper = document.createElement("div")
-    wrapper.innerHTML = `<b>Title</b><br />${this.templateContent}`
+    wrapper.innerHTML = `${this.templateContent}`
 
     return wrapper
-  },
-
-  addRandomText() {
-    this.sendSocketNotification("GET_RANDOM_TEXT", { amountCharacters: 15 })
   },
 
   /**
@@ -56,9 +49,8 @@ Module.register("MMM-Template", {
    * @param {number} payload the payload type.
    */
   notificationReceived(notification, payload) {
-    if (notification === "TEMPLATE_RANDOM_TEXT") {
-      this.templateContent = `${this.config.exampleContent} ${payload}`
-      this.updateDom()
+    if (notification === "DO_CHAT_COMPLETION") {
+      this.sendSocketNotification("SPEECH_TO_TEXT", payload)
     }
-  }
+  },
 })
